@@ -39,6 +39,7 @@ st.header(data_type)
 if data_type == 'Team Data':
     url = "https://docs.google.com/spreadsheets/d/1rS-ZR8lRUILphhovvB744qNi7PODkLiG_hcyg5PE0vc/edit?gid=0#gid=0"
     st.write(f"[Teamwide Summary Stats]({url})")
+    st.write(f"[Google Drive - Raw Data and Statto Files](https://drive.google.com/drive/folders/1aABXnR5OPF2mlxOYhlWNwiWqiC99UaCc?usp=sharing)")
     for fname, data in team_data.items():
         st.subheader(fname)
         st.dataframe(data)
