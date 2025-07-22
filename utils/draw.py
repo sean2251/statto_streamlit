@@ -60,6 +60,7 @@ def norm_to_field_y(y_norm):
 def show_passes(df):
     fig = draw_field()
 
+    # TODO: When thrower / receiver is selected, show thrower stats (yards, completions, etc)
     thrower_options = [x for x in df['Thrower'].unique() if pd.notnull(x)]
     thrower = st.selectbox('Thrower', sorted(thrower_options, key=str), index=None, placeholder='Select a thrower')
     receiver_options = [x for x in df['Receiver'].unique() if pd.notnull(x)]
