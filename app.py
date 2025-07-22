@@ -13,9 +13,26 @@ team_data = load_team_csvs(DATA_DIR)
 tournament_data = load_tournament_csvs(DATA_DIR)
 tournaments = list(tournament_data.keys())
 
+# --- Simple Login ---
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.title('Login Required')
+    username = st.text_input('Username')
+    password = st.text_input('Password', type='password')
+    login_btn = st.button('Login')
+    if login_btn:
+        if username == st.secrets.username and password == st.secrets.password:
+            st.session_state.logged_in = True
+            st.success('Login successful!')
+            st.rerun()
+        else:
+            st.error('Invalid username or password.')
+    st.stop()
+
 # Sidebar for data selection
 data_type = st.sidebar.radio('View', ['Team Data', 'Tournaments'])
-
 
 # Display data based on selection
 st.header(data_type)
