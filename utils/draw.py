@@ -60,7 +60,20 @@ def norm_to_field_y(y_norm):
 def show_passes(df):
     fig = draw_field()
 
-    # TODO: When thrower / receiver is selected, show thrower stats (yards, completions, etc)
+    # TODO
+    # Player specific stats
+    # Goals, A1, A2, Blocks
+    # Touches, turnovers, thrower errors, receiver errors
+    # Thrower completion percentage, Receiver completion percentage
+    # Average throwing distance / yardage, average receiving distance / yardage
+    # Breakdown of throws by type (short, medium, long)
+    # Completion rates by type (short, medium, long)
+
+    # Additional game filters
+    # O points vs D points
+    # Clean scores, dirty scores, broken points
+    # Turnovers - distance compared to average completed throw. Rate of EZ attempts to average completed throw. # of hucks vs short throws.
+
     thrower_options = [x for x in df['Thrower'].unique() if pd.notnull(x)]
     thrower = st.selectbox('Thrower', sorted(thrower_options, key=str), index=None, placeholder='Select a thrower')
     receiver_options = [x for x in df['Receiver'].unique() if pd.notnull(x)]
