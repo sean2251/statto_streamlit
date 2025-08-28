@@ -273,7 +273,8 @@ def show_passes(df):
         st.plotly_chart(fig, use_container_width=True)
     with col_legend:
         st.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
-        show_custom_legend()        
+        show_custom_legend() 
+    st.dataframe(df)       
 
 
 def show_blocks(df):

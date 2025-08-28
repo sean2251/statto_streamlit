@@ -75,7 +75,7 @@ elif data_type == 'Tournaments':
         elif subview == "Possessions":
             st.info("No visualizations available for this subview")
 
-        show_data = st.checkbox('View All Data', value=True)
+        show_data = st.checkbox('View All Data', value=False)
         if show_data:
             st.dataframe(df)
     else:
