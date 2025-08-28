@@ -1,0 +1,12 @@
+Created,Point,Possession,Started point on offense?,Scored?,Start X (0 -> 1 = left sideline -> right sideline),Start Y (0 -> 1 = back of opponent endzone -> back of own endzone),Initiator,Passes,Secondary assist,Assist,Goal,Thrower error,Receiver error,Stalled out
+2025-08-25 11:39:41,1,1,0,1,0.48118278,0.2664016,30 Caleb Moran,2,30 Caleb Moran,08 ManHua Zhu,14 Gina Stees,,,
+2025-08-25 11:41:25,2,1,0,0,0.53494626,0.44333997,10 Nate King,5,,,,08 ManHua Zhu,,
+2025-08-25 11:42:50,2,2,0,0,0.827957,0.4632207,08 ManHua Zhu,1,,,,08 ManHua Zhu,,
+2025-08-25 11:44:45,3,1,1,1,0.8413978,0.65308154,32 Sean McSweeney,7,92 Sam DeVine,47 Penny Wu,,,,
+2025-08-25 11:48:11,4,1,0,0,0.89784944,0.82107353,76 Conrad Nguyen,4,,,,56 Angel Barragan,,
+2025-08-25 11:49:31,5,1,1,1,0.2580645,0.49204773,47 Penny Wu,9,03 Ethan Jones,32 Sean McSweeney,03 Ethan Jones,,,
+2025-08-25 11:53:42,7,1,1,1,0.61290324,0.79920477,32 Sean McSweeney,4,05 Seokhee Burningham,32 Sean McSweeney,92 Sam DeVine,,,
+2025-08-25 11:56:57,9,1,1,1,0.2123656,0.5337972,32 Sean McSweeney,2,32 Sean McSweeney,47 Penny Wu,03 Ethan Jones,,,
+2025-08-25 11:58:37,10,1,0,0,0.2016129,0.82803184,14 Gina Stees,2,,,,08 ManHua Zhu,71 Guber,
+2025-08-25 12:10:31,11,1,1,1,0.50537634,0.64314115,32 Sean McSweeney,2,32 Sean McSweeney,92 Sam DeVine,24 Courtney Rachke,,,
+2025-08-25 12:12:02,12,1,0,1,0.5268817,0.8161034,08 ManHua Zhu,6,20 Ellie Lind,56 Angel Barragan,71 Guber,,,
