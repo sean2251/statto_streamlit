@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.colors
 
 FIELD_LENGTH = 110  # total length (including both endzones)
 FIELD_WIDTH = 40    # width (sideline to sideline)
@@ -88,16 +87,11 @@ def show_passes(df):
     if point:
         df = df[df['Point'] == point]
 
-    # Add the checkbox to toggle possession colors
-    differentiate_possessions = st.checkbox('Differentiate Possessions', key='passes_differentiate')
-
-    possession_color_map = {}
-    if differentiate_possessions and not df.empty:
-        # Get unique possessions from the currently filtered dataframe
-        possessions = df['Possession'].drop_duplicates().tolist()
-        colors = plotly.colors.qualitative.Plotly  # A good set of distinct colors
-        # Create a color map for each possession
-        possession_color_map = {poss: colors[i % len(colors)] for i, poss in enumerate(possessions)}
+    # Prepare throw start and end points
+    start_x = df['Start X (0 -> 1 = left sideline -> right sideline)'].apply(norm_to_field_x)
+    start_y = df['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'].apply(norm_to_field_y)
+    end_x = df['End X (0 -> 1 = left sideline -> right sideline)'].apply(norm_to_field_x)
+    end_y = df['End Y (0 -> 1 = back of opponent endzone -> back of own endzone)'].apply(norm_to_field_y)
 
     # Add throws as arrows
     for index, row in df.iterrows():
@@ -114,19 +108,11 @@ def show_passes(df):
 
         end_shape = "circle"
         start_shape = "circle"
+        color = "green"
         start_size = 3
         end_size = 3
-        
-        # Determine color and line style based on user selection
-        if differentiate_possessions:
-            possession = row['Possession']
-            color = possession_color_map.get(possession, '#808080') # Default to grey if not found
-            line_style = 'dash' if turnover == 1 else 'solid'
-        else:
-            color = "red" if turnover == 1 else "green"
-            line_style = 'solid'
-
         if turnover == 1:
+            color = "red"
             if thrower_error == 1:
                 start_shape = "square"
                 start_size = 15
@@ -141,7 +127,7 @@ def show_passes(df):
             x=[sx, ex],
             y=[sy, ey],
             mode="lines+markers",
-            line=dict(color=color, width=2, dash=line_style),
+            line=dict(color=color, width=2),
             marker=dict(
                 size=[start_size, end_size],
                 color=[color, color],
@@ -185,17 +171,16 @@ def show_endzone_attempts(df):
     # For each unique (Point, Possession), remove all throws that occur before the first time the disc has a start of Y < 0.36363
     # Assumes columns: 'Point', 'Possession', 'Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'
     filtered_rows = []
-    if not df.empty:
-        for (tournament_game, point, possession), group in df.groupby(['tournament_game', 'Point', 'Possession']):
-            # Find the index of the first throw with start Y < 0.36363
-            mask = group['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'] < 0.36363
-            if mask.any():
-                first_idx = mask.idxmax()  # idxmax returns the first index where mask is True
-                # Keep all throws from first_idx onwards (including first_idx)
-                group = group.loc[first_idx:]
-                filtered_rows.append(group)
-            # If no such throw, skip this group entirely
-        df = pd.concat(filtered_rows) if filtered_rows else df.iloc[0:0]
+    for (tournament_game, point, possession), group in df.groupby(['tournament_game', 'Point', 'Possession']):
+        # Find the index of the first throw with start Y < 0.36363
+        mask = group['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'] < 0.36363
+        if mask.any():
+            first_idx = mask.idxmax()  # idxmax returns the first index where mask is True
+            # Keep all throws from first_idx onwards (including first_idx)
+            group = group.loc[first_idx:]
+            filtered_rows.append(group)
+        # If no such throw, skip this group entirely
+    df = pd.concat(filtered_rows) if filtered_rows else df.iloc[0:0]
 
 
     st.markdown("#### Endzone Attempts")
@@ -204,25 +189,29 @@ def show_endzone_attempts(df):
     num_points_with_clean_ez_scores = 0
     num_points_with_dirty_ez_scores = 0
     num_points_broken = 0
-    num_points_with_endzone_attempts = 0
 
-    if not df.empty:
-        points_with_endzone_attempts = df.groupby(['tournament_game', 'Point'])
-        num_points_with_endzone_attempts = points_with_endzone_attempts.ngroups
+    points_with_endzone_attempts = df.groupby(['tournament_game', 'Point'])
+    num_points_with_endzone_attempts = points_with_endzone_attempts.ngroups
 
-        for point, point_data in points_with_endzone_attempts:
-            if (point_data['Assist?'] == 1).any():
-                # We scored
-                if point_data['Possession'].nunique() == 1:
-                    num_points_with_clean_ez_scores += 1
-                else:
-                    num_points_with_dirty_ez_scores += 1
+    for point, point_data in points_with_endzone_attempts:
+        if (point_data['Assist?'] == 1).any():
+            # We scored
+            if point_data['Possession'].nunique() == 1:
+                num_points_with_clean_ez_scores += 1
             else:
-                num_points_broken += 1
+                num_points_with_dirty_ez_scores += 1
+        else:
+            num_points_broken += 1
     
-    clean_pct = f"{(num_points_with_clean_ez_scores / num_points_with_endzone_attempts * 100):.1f}%" if num_points_with_endzone_attempts > 0 else "0.0%"
-    dirty_pct = f"{(num_points_with_dirty_ez_scores / num_points_with_endzone_attempts * 100):.1f}%" if num_points_with_endzone_attempts > 0 else "0.0%"
-    broken_pct = f"{(num_points_broken / num_points_with_endzone_attempts * 100):.1f}%" if num_points_with_endzone_attempts > 0 else "0.0%"
+    clean_pct = f"{(num_points_with_clean_ez_scores / num_points_with_endzone_attempts * 100):.1f}%" if num_points_with_endzone_attempts > 0 else None
+    dirty_pct = f"{(num_points_with_dirty_ez_scores / num_points_with_endzone_attempts * 100):.1f}%" if num_points_with_endzone_attempts > 0 else None
+    broken_pct = f"{(num_points_broken / num_points_with_endzone_attempts * 100):.1f}%" if num_points_with_endzone_attempts > 0 else None
+
+    # num_unique_possessions_with_endzone_attempts = df.groupby(['tournament_game', 'Point', 'Possession']).ngroups
+
+
+    # TODO: Add a way to view clean ez scores, dirty ez scores, and ez attempts --> broken via buttons
+    # Instead of the specific point selection
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -233,6 +222,7 @@ def show_endzone_attempts(df):
     with col2:
         st.metric(label="Num Points Dirty EZ Scores", value=num_points_with_dirty_ez_scores)
         st.badge(dirty_pct, color="orange")
+        # st.metric(label="Total # EZ Attempts", value=num_unique_possessions_with_endzone_attempts)
     with col3:
         st.metric(label="Num Points EZ Attempt -> Broken", value=num_points_broken)
         st.badge(broken_pct, color="red")
@@ -240,38 +230,31 @@ def show_endzone_attempts(df):
 
     # Visualization
     fig = draw_field()
-    
-    # Add the checkbox to toggle possession colors
-    differentiate_possessions = st.checkbox('Differentiate Possessions', key='endzone_differentiate')
+    # Create a unique list of (tournament_game, Point) tuples for selection
+    unique_points = df[['tournament_game', 'Point']].drop_duplicates()
+    unique_points_list = [
+        (row['tournament_game'], row['Point']) for _, row in unique_points.iterrows()
+    ]
+    # Format for display
+    point_labels = [
+        f"{tournament_game} - Point {point}" for tournament_game, point in unique_points_list
+    ]
+    point_selection = st.selectbox(
+        'Point',
+        options=list(zip(point_labels, unique_points_list)),
+        index=None,
+        format_func=lambda x: x[0] if x else "Select a point",
+        placeholder='Select a point'
+    )
+    if point_selection:
+        selected_tournament_game, selected_point = point_selection[1]
+        df = df[(df['tournament_game'] == selected_tournament_game) & (df['Point'] == selected_point)]
 
-    if not df.empty:
-        # Create a unique list of (tournament_game, Point) tuples for selection
-        unique_points = df[['tournament_game', 'Point']].drop_duplicates()
-        unique_points_list = [
-            (row['tournament_game'], row['Point']) for _, row in unique_points.iterrows()
-        ]
-        # Format for display
-        point_labels = [
-            f"{tournament_game} - Point {point}" for tournament_game, point in unique_points_list
-        ]
-        point_selection = st.selectbox(
-            'Point',
-            options=list(zip(point_labels, unique_points_list)),
-            index=None,
-            format_func=lambda x: x[0] if x else "Select a point",
-            placeholder='Select a point'
-        )
-        if point_selection:
-            selected_tournament_game, selected_point = point_selection[1]
-            df = df[(df['tournament_game'] == selected_tournament_game) & (df['Point'] == selected_point)]
-
-    possession_color_map = {}
-    if differentiate_possessions and not df.empty:
-        # Get unique possessions from the currently filtered dataframe
-        possessions = df['Possession'].drop_duplicates().tolist()
-        colors = plotly.colors.qualitative.Plotly  # A good set of distinct colors
-        # Create a color map for each possession
-        possession_color_map = {poss: colors[i % len(colors)] for i, poss in enumerate(possessions)}
+    # # Prepare throw start and end points
+    start_x = df['Start X (0 -> 1 = left sideline -> right sideline)'].apply(norm_to_field_x)
+    start_y = df['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'].apply(norm_to_field_y)
+    end_x = df['End X (0 -> 1 = left sideline -> right sideline)'].apply(norm_to_field_x)
+    end_y = df['End Y (0 -> 1 = back of opponent endzone -> back of own endzone)'].apply(norm_to_field_y)
 
     # Add throws as arrows
     for index, row in df.iterrows():
@@ -288,19 +271,11 @@ def show_endzone_attempts(df):
 
         end_shape = "circle"
         start_shape = "circle"
+        color = "green"
         start_size = 3
         end_size = 3
-
-        # Determine color and line style based on user selection
-        if differentiate_possessions:
-            possession = row['Possession']
-            color = possession_color_map.get(possession, '#808080') # Default to grey if not found
-            line_style = 'dash' if turnover == 1 else 'solid'
-        else:
-            color = "red" if turnover == 1 else "green"
-            line_style = 'solid'
-
         if turnover == 1:
+            color = "red"
             if thrower_error == 1:
                 start_shape = "square"
                 start_size = 15
@@ -315,7 +290,7 @@ def show_endzone_attempts(df):
             x=[sx, ex],
             y=[sy, ey],
             mode="lines+markers",
-            line=dict(color=color, width=2, dash=line_style),
+            line=dict(color=color, width=2),
             marker=dict(
                 size=[start_size, end_size],
                 color=[color, color],
