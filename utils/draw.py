@@ -1,11 +1,94 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.colors
+
 
 FIELD_LENGTH = 110  # total length (including both endzones)
 FIELD_WIDTH = 40    # width (sideline to sideline)
 ENDZONE_DEPTH = 20  # each endzone
 
+def show_custom_legend():
+    legend_fig = go.Figure()
+
+    # Pass: blue square + blue line + blue circle
+    legend_fig.add_trace(go.Scatter(
+        x=[0, 1], y=[3, 3],
+        mode="lines",
+        line=dict(color="green", width=3),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+    legend_fig.add_trace(go.Scatter(
+        x=[0], y=[3],
+        mode="markers",
+        marker=dict(symbol="square", color="green", size=16, line=dict(width=1, color="black")),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+    legend_fig.add_trace(go.Scatter(
+        x=[1], y=[3],
+        mode="markers",
+        marker=dict(symbol="circle", color="green", size=18, line=dict(width=1, color="black")),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+
+    # Drop: blue square + red line + red circle
+    legend_fig.add_trace(go.Scatter(
+        x=[0, 1], y=[2, 2],
+        mode="lines",
+        line=dict(color="red", width=3),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+    legend_fig.add_trace(go.Scatter(
+        x=[0], y=[2],
+        mode="markers",
+        marker=dict(symbol="square", color="green", size=16, line=dict(width=1, color="black")),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+    legend_fig.add_trace(go.Scatter(
+        x=[1], y=[2],
+        mode="markers",
+        marker=dict(symbol="circle", color="red", size=20, line=dict(width=1, color="black")),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+
+    # Throwaway: red square + red line (no end marker)
+    legend_fig.add_trace(go.Scatter(
+        x=[0, 1], y=[1, 1],
+        mode="lines",
+        line=dict(color="red", width=3),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+    legend_fig.add_trace(go.Scatter(
+        x=[0], y=[1],
+        mode="markers",
+        marker=dict(symbol="square", color="red", size=20, line=dict(width=1, color="black")),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+
+    legend_fig.update_layout(
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-0.2, 1.8]),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0.5, 3.5]),
+        width=180,
+        height=140,
+        margin=dict(l=0, r=0, t=0, b=0),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+    )
+
+    # Add text labels using annotations (smaller font, closer to markers)
+    legend_fig.add_annotation(x=1.3, y=3, text="Pass", showarrow=False, font=dict(size=14), xanchor="left", yanchor="middle")
+    legend_fig.add_annotation(x=1.3, y=2, text="Drop", showarrow=False, font=dict(size=14), xanchor="left", yanchor="middle")
+    legend_fig.add_annotation(x=1.3, y=1, text="Throwaway", showarrow=False, font=dict(size=14), xanchor="left", yanchor="middle")
+
+    st.plotly_chart(legend_fig, use_container_width=False)
 
 def draw_field():
     # Draw the field as a rectangle
@@ -58,99 +141,140 @@ def norm_to_field_y(y_norm):
     return (1 - y_norm) * FIELD_LENGTH
 
 def show_passes(df):
-    fig = draw_field()
+    col_chart, col_legend = st.columns([3, 1])
+    with col_chart:
+        fig = draw_field()
+    
+        # TODO
+        # Player specific stats
+        # Goals, A1, A2, Blocks
+        # Touches, turnovers, thrower errors, receiver errors
+        # Thrower completion percentage, Receiver completion percentage
+        # Average throwing distance / yardage, average receiving distance / yardage
+        # Breakdown of throws by type (short, medium, long)
+        # Completion rates by type (short, medium, long)
 
-    # TODO
-    # Player specific stats
-    # Goals, A1, A2, Blocks
-    # Touches, turnovers, thrower errors, receiver errors
-    # Thrower completion percentage, Receiver completion percentage
-    # Average throwing distance / yardage, average receiving distance / yardage
-    # Breakdown of throws by type (short, medium, long)
-    # Completion rates by type (short, medium, long)
+        # Additional game filtersI
+        # O points vs D points
+        # Clean scores, dirty scores, broken points
+        # Turnovers - distance compared to average completed throw. Rate of EZ attempts to average completed throw. # of hucks vs short throws.
+    
+        thrower_options = [x for x in df['Thrower'].unique() if pd.notnull(x)]
+        thrower = st.selectbox('Thrower', sorted(thrower_options, key=str), index=None, placeholder='Select a thrower')
+        receiver_options = [x for x in df['Receiver'].unique() if pd.notnull(x)]
+        receiver = st.selectbox('Receiver', sorted(receiver_options, key=str), index=None, placeholder='Select a receiver')
+        point = st.selectbox('Point', df['Point'].unique(), index=None, placeholder='Select a point')
 
-    # Additional game filters
-    # O points vs D points
-    # Clean scores, dirty scores, broken points
-    # Turnovers - distance compared to average completed throw. Rate of EZ attempts to average completed throw. # of hucks vs short throws.
+        if thrower:
+            df = df[df['Thrower'] == thrower]
+        if receiver:
+            df = df[df['Receiver'] == receiver]
+        if point:
+            df = df[df['Point'] == point]
 
-    thrower_options = [x for x in df['Thrower'].unique() if pd.notnull(x)]
-    thrower = st.selectbox('Thrower', sorted(thrower_options, key=str), index=None, placeholder='Select a thrower')
-    receiver_options = [x for x in df['Receiver'].unique() if pd.notnull(x)]
-    receiver = st.selectbox('Receiver', sorted(receiver_options, key=str), index=None, placeholder='Select a receiver')
-    point = st.selectbox('Point', df['Point'].unique(), index=None, placeholder='Select a point')
-
-    if thrower:
-        df = df[df['Thrower'] == thrower]
-    if receiver:
-        df = df[df['Receiver'] == receiver]
-    if point:
-        df = df[df['Point'] == point]
-
-    # Prepare throw start and end points
-    start_x = df['Start X (0 -> 1 = left sideline -> right sideline)'].apply(norm_to_field_x)
-    start_y = df['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'].apply(norm_to_field_y)
-    end_x = df['End X (0 -> 1 = left sideline -> right sideline)'].apply(norm_to_field_x)
-    end_y = df['End Y (0 -> 1 = back of opponent endzone -> back of own endzone)'].apply(norm_to_field_y)
-
-    # Add throws as arrows
-    for index, row in df.iterrows():
-        sx = norm_to_field_x(row['Start X (0 -> 1 = left sideline -> right sideline)'])
-        sy = norm_to_field_y(row['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'])
-        ex = norm_to_field_x(row['End X (0 -> 1 = left sideline -> right sideline)'])
-        ey = norm_to_field_y(row['End Y (0 -> 1 = back of opponent endzone -> back of own endzone)'])
-        thrower = row['Thrower']
-        receiver = row['Receiver']
-        point = row['Point']
-        turnover = row['Turnover?']
-        thrower_error = row['Thrower error?']
-        receiver_error = row['Receiver error?']
-
-        end_shape = "circle"
-        start_shape = "circle"
-        color = "green"
-        start_size = 3
-        end_size = 3
-        if turnover == 1:
-            color = "red"
-            if thrower_error == 1:
-                start_shape = "square"
-                start_size = 15
-            if receiver_error == 1:
-                end_shape = "square"
-                end_size = 15
-
-        # Draw the line (start to end)
-        # Show thrower and receiver on hover for both endpoints and the line
-        hover_text = f"Thrower: {thrower}<br>Receiver: {receiver}"
-        fig.add_trace(go.Scatter(
-            x=[sx, ex],
-            y=[sy, ey],
-            mode="lines+markers",
-            line=dict(color=color, width=2),
-            marker=dict(
-                size=[start_size, end_size],
-                color=[color, color],
-                symbol=[start_shape, end_shape]
-            ),
-            hoverinfo="text",
-            text=[hover_text, hover_text],
-            showlegend=False
-        ))
-        # Add arrow head
-        fig.add_annotation(
-            x=ex, y=ey,
-            ax=sx, ay=sy,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True,
-            arrowhead=3,
-            arrowsize=1,
-            arrowwidth=2,
-            arrowcolor=color,
-            opacity=0.7
+        df = df.copy()
+        df['possession_ID'] = (
+            df['tournament_game'].astype(str) + "_" +
+            df['Point'].astype(str) + "_" +
+            df['Possession'].astype(str)
         )
 
-    st.plotly_chart(fig, use_container_width=False)
+        differentiate_possessions = st.checkbox("Differentiate Possessions", value=False)
+
+        # Prepare color palette for possessions
+        unique_possessions = df['possession_ID'].unique()
+        num_possessions = len(unique_possessions)
+        if num_possessions <= 20:
+            palette = plotly.colors.qualitative.Plotly
+            colors = [palette[i % len(palette)] for i in range(num_possessions)]
+        else:
+            colors = [f"hsl({int(360*i/num_possessions)},70%,50%)" for i in range(num_possessions)]
+        possession_color_map = dict(zip(unique_possessions, colors))
+
+        # Assign line color for each throw
+        if differentiate_possessions:
+            df['line_color'] = df['possession_ID'].map(possession_color_map)
+        else:
+            df['line_color'] = df['Turnover?'].map({0: "green", 1: "red"})
+
+        # Batch lines by color (possession or turnover/completion)
+        for idx, row in df.iterrows():
+            sx = norm_to_field_x(row['Start X (0 -> 1 = left sideline -> right sideline)'])
+            sy = norm_to_field_y(row['Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'])
+            ex = norm_to_field_x(row['End X (0 -> 1 = left sideline -> right sideline)'])
+            ey = norm_to_field_y(row['End Y (0 -> 1 = back of opponent endzone -> back of own endzone)'])
+            color = row['line_color']
+            turnover = row['Turnover?']
+            thrower_error = row['Thrower error?']
+            receiver_error = row['Receiver error?']
+
+            # Default: completed pass
+            start_marker = dict(symbol="square", color=color, size=10)
+            end_marker = dict(symbol="circle", color=color, size=12)
+            line_color = color
+            show_end_marker = True
+
+            # Throwaway: turnover + thrower error
+            if turnover == 1 and thrower_error == 1:
+                start_marker = dict(symbol="square", color="red", size=16)
+                line_color = "red"
+                show_end_marker = False  # No end marker for throwaway
+
+            # Drop: turnover + receiver error
+            elif turnover == 1 and receiver_error == 1:
+                start_marker = dict(symbol="square", color=color, size=10)
+                end_marker = dict(symbol="circle", color="red", size=16)
+                line_color = "red"
+                show_end_marker = True
+
+            # Draw the line
+            fig.add_trace(go.Scatter(
+                x=[sx, ex] if show_end_marker else [sx, ex],
+                y=[sy, ey] if show_end_marker else [sy, ey],
+                mode="lines",
+                line=dict(color=line_color, width=2),
+                hoverinfo="skip",
+                showlegend=False
+            ))
+
+            # Draw the start marker (always a square)
+            fig.add_trace(go.Scatter(
+                x=[sx],
+                y=[sy],
+                mode="markers",
+                marker=dict(
+                    color=[start_marker["color"]],
+                    symbol=[start_marker["symbol"]],
+                    size=[start_marker["size"]],
+                    line=dict(width=1, color="black")
+                ),
+                text=[f"Thrower: {row['Thrower']}<br>Receiver: {row['Receiver']}<br>Possession: {row['possession_ID']}"],
+                hoverinfo="text",
+                showlegend=False
+            ))
+
+            # Draw the end marker if needed
+            if show_end_marker:
+                fig.add_trace(go.Scatter(
+                    x=[ex],
+                    y=[ey],
+                    mode="markers",
+                    marker=dict(
+                        color=[end_marker["color"]],
+                        symbol=[end_marker["symbol"]],
+                        size=[end_marker["size"]],
+                        line=dict(width=1, color="black")
+                    ),
+                    text=[f"Thrower: {row['Thrower']}<br>Receiver: {row['Receiver']}<br>Possession: {row['possession_ID']}"],
+                    hoverinfo="text",
+                    showlegend=False
+                ))
+        
+        st.plotly_chart(fig, use_container_width=True)
+    with col_legend:
+        st.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
+        show_custom_legend()        
+
 
 def show_blocks(df):
     fig = draw_field()
@@ -285,7 +409,7 @@ def show_endzone_attempts(df):
 
         # Draw the line (start to end)
         # Show thrower and receiver on hover for both endpoints and the line
-        hover_text = f"Thrower: {thrower}<br>Receiver: {receiver}"
+        hover_text = f"Thrower: {thrower}<br>Receiver: {receiver}<br>Possession: {row.get('Possession', '')}"
         fig.add_trace(go.Scatter(
             x=[sx, ex],
             y=[sy, ey],
