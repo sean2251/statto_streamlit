@@ -42,9 +42,25 @@ def load_tournament_csvs(data_dir):
                                 # If this is a Passes file, add the "tournament / game" column
                                 if file.lower().startswith("passes"):
                                     tournament_game_str = f"{tournament_folder}_{game_folder}"
+
+                                    # Locate the corresponding Points file
+                                    points_file = next((f for f in os.listdir(game_path) if f.lower().startswith("points")), None)
+                                    if points_file:
+                                        points_path = os.path.join(game_path, points_file)
+                                        points_df = pd.read_csv(points_path)
+
+                                        # Extract relevant columns from Points file
+                                        columns_to_merge = ['Point', 'Our score at pull', "Opponent's score at pull", 'Started on offense?', 'Scored?']
+                                        if all(col in points_df.columns for col in columns_to_merge):
+                                            points_subset = points_df[columns_to_merge]
+
+                                            # Merge with Passes DataFrame
+                                            df = df.merge(points_subset, on='Point', how='left')
+
                                     df["tournament_game"] = tournament_game_str
                                 tournament_data[tournament_folder][game_folder][file] = df
                             except Exception as e:
                                 st.warning(f'Could not load {file_path}: {e}')
     rename_stat_files(tournament_data)
+    print("tournament data", tournament_data)
     return tournament_data

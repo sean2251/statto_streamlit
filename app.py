@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 
 from utils.team import load_team_csvs, load_tournament_csvs, SUBVIEWS, DATA_DIR
-from utils.draw import show_passes, show_blocks, show_endzone_attempts, draw_field
+from utils.draw import show_passes, show_blocks, show_endzone_attempts, draw_field, show_possessions
 from utils.stats import show_points
 
 
@@ -62,6 +62,7 @@ elif data_type == 'Tournaments':
             passes_view = st.radio('', ['All Passes', 'Endzone Attempts'])
             if passes_view == 'All Passes':
                 show_passes(df)
+                print("passes_view columns:", df.columns.tolist())
             elif passes_view == 'Endzone Attempts':
                 show_endzone_attempts(df)
         elif subview == "Points":
@@ -73,10 +74,15 @@ elif data_type == 'Tournaments':
         elif subview == "Player Stats":
             st.info("No visualizations available for this subview")
         elif subview == "Possessions":
-            st.info("No visualizations available for this subview")
+            passes_df = subview_data["Passes"]
+            print("passes_df columns", passes_df.columns.tolist())
+            if passes_df is not None:
+                show_possessions(passes_df)
+            else:
+                st.info("No passes data available for selected games")
 
-        show_data = st.checkbox('View All Data', value=False)
-        if show_data:
-            st.dataframe(df)
+    show_data = st.checkbox('View All Data', value=False)
+    if show_data:
+        st.dataframe(df)
     else:
          st.info("Select at least one game to view data")
