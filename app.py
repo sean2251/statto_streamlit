@@ -75,7 +75,6 @@ elif data_type == 'Tournaments':
             st.info("No visualizations available for this subview")
         elif subview == "Possessions":
             passes_df = subview_data["Passes"]
-            print("passes_df columns", passes_df.columns.tolist())
             if passes_df is not None:
                 show_possessions(passes_df)
             else:

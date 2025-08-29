@@ -62,5 +62,4 @@ def load_tournament_csvs(data_dir):
                             except Exception as e:
                                 st.warning(f'Could not load {file_path}: {e}')
     rename_stat_files(tournament_data)
-    print("tournament data", tournament_data)
     return tournament_data
