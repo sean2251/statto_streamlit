@@ -4,8 +4,9 @@ import os
 from collections import defaultdict
 
 from utils.team import load_team_csvs, load_tournament_csvs, SUBVIEWS, DATA_DIR
-from utils.draw import show_passes, show_blocks, show_endzone_attempts, draw_field
+from utils.draw import show_blocks, draw_field
 from utils.stats import show_points
+from utils.passes import show_passes_view
 
 
 # Load data
@@ -62,11 +63,7 @@ elif data_type == 'Tournaments':
 
     if df is not None:
         if subview == "Passes":
-            passes_view = st.radio('passes_view', ['All Passes', 'Endzone Attempts'])
-            if passes_view == 'All Passes':
-                show_passes(df)
-            elif passes_view == 'Endzone Attempts':
-                show_endzone_attempts(df)
+            show_passes_view(df)
         elif subview == "Points":
             show_points(df)
         elif subview == "Defensive Blocks":
