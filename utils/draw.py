@@ -57,6 +57,15 @@ def norm_to_field_y(y_norm):
     # To flip the direction, invert the y axis: 0 (back of own endzone) to 1 (back of opponent endzone)
     return (1 - y_norm) * FIELD_LENGTH
 
+def update_selected_thrower(thrower_name, selected):
+    print("update_selected_thrower", thrower_name, selected)
+    pass
+
+def update_all_throwers(all_throwers_selected):
+    st.session_state['all_throwers_selected'] = not st.session_state['all_throwers_selected']
+    for thrower in st.session_state['selected_throwers']:
+        st.session_state['selected_throwers'][thrower] = st.session_state['all_throwers_selected']
+
 def show_passes(df):
     fig = draw_field()
 
@@ -66,15 +75,41 @@ def show_passes(df):
     # Touches, turnovers, thrower errors, receiver errors
     # Thrower completion percentage, Receiver completion percentage
     # Average throwing distance / yardage, average receiving distance / yardage
+
     # Breakdown of throws by type (short, medium, long)
     # Completion rates by type (short, medium, long)
+
+    # Throw filters - complete, incomplete
 
     # Additional game filters
     # O points vs D points
     # Clean scores, dirty scores, broken points
     # Turnovers - distance compared to average completed throw. Rate of EZ attempts to average completed throw. # of hucks vs short throws.
 
-    thrower_options = [x for x in df['Thrower'].unique() if pd.notnull(x)]
+    # Initialise state for all throwers: dict of {thrower: True}, default all selected
+    thrower_options = sorted([x for x in df['Thrower'].unique() if pd.notnull(x)])
+
+    if 'all_throwers_selected' not in st.session_state:
+        st.session_state['all_throwers_selected'] = True
+
+    if 'selected_throwers' not in st.session_state:
+        st.session_state['selected_throwers'] = {thrower: True for thrower in thrower_options}
+
+    st.checkbox(
+        "All Throwers", 
+        value=st.session_state['all_throwers_selected'], 
+        key="all_throwers_checkbox", 
+        on_change=update_all_throwers, 
+        args=(st.session_state['all_throwers_selected'],))
+    for thrower in thrower_options:
+        st.checkbox(
+            label=thrower, 
+            value=st.session_state['selected_throwers'][thrower], 
+            key=thrower, 
+            on_change=update_selected_thrower, 
+            args=(thrower, st.session_state['selected_throwers'][thrower])
+        )
+
     thrower = st.selectbox('Thrower', sorted(thrower_options, key=str), index=None, placeholder='Select a thrower')
     receiver_options = [x for x in df['Receiver'].unique() if pd.notnull(x)]
     receiver = st.selectbox('Receiver', sorted(receiver_options, key=str), index=None, placeholder='Select a receiver')
@@ -168,6 +203,8 @@ def show_blocks(df):
     st.plotly_chart(fig, use_container_width=False)
 
 def show_endzone_attempts(df):
+# TODO: Add O line D line filters and when certain player are involved or not
+
     # For each unique (Point, Possession), remove all throws that occur before the first time the disc has a start of Y < 0.36363
     # Assumes columns: 'Point', 'Possession', 'Start Y (0 -> 1 = back of opponent endzone -> back of own endzone)'
     filtered_rows = []
