@@ -6,10 +6,11 @@ from utils.load_data import load_team_csvs, load_tournament_csvs
 from views.points import show_points
 from views.possessions import show_possessions
 from views.passes import show_passes
+from views.player_stats import show_player_stats
 
 
 DATA_DIR = 'data'
-SUBVIEWS = ["Passes", "Points", "Possessions"]
+SUBVIEWS = ["Passes", "Points", "Possessions", "Player Stats", "Defensive Blocks"]
 
 
 # Load data
@@ -23,19 +24,19 @@ st.set_page_config(layout="wide")
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-if not st.session_state.logged_in:
-    st.title('Login Required')
-    username = st.text_input('Username')
-    password = st.text_input('Password', type='password')
-    login_btn = st.button('Login')
-    if login_btn:
-        if username == st.secrets.username and password == st.secrets.password:
-            st.session_state.logged_in = True
-            st.success('Login successful!')
-            st.rerun()
-        else:
-            st.error('Invalid username or password.')
-    st.stop()
+# if not st.session_state.logged_in:
+#     st.title('Login Required')
+#     username = st.text_input('Username')
+#     password = st.text_input('Password', type='password')
+#     login_btn = st.button('Login')
+#     if login_btn:
+#         if username == st.secrets.username and password == st.secrets.password:
+#             st.session_state.logged_in = True
+#             st.success('Login successful!')
+#             st.rerun()
+#         else:
+#             st.error('Invalid username or password.')
+#     st.stop()
 
 # Sidebar for data selection
 data_type = st.sidebar.radio('View', ['Tournaments', 'Team Data'])
@@ -60,23 +61,26 @@ elif data_type == 'Tournaments':
                 subview_data[subview_name] = pd.concat([old_subview_data, new_subview_data])
 
     # Display selected subview
-    subview = st.sidebar.radio("Subview", SUBVIEWS)
-    df = subview_data[subview]
-
-    if df is not None:
-        if subview == "Passes":
-            show_passes(df)
-        elif subview == "Points":
-            show_points(df)
-        elif subview == "Possessions":
-            passes_df = subview_data["Passes"]
-            if passes_df is not None:
-                show_possessions(passes_df)
-            else:
-                st.info("No passes data available for selected games")
+    subview = st.sidebar.radio("Subview", SUBVIEWS[:-1])
+    if subview == "Passes":
+        df = subview_data[subview]
+        show_passes(df)
+    elif subview == "Points":
+        df = subview_data[subview]
+        show_points(df)
+    elif subview == "Possessions":
+        df = subview_data[subview]
+        passes_df = subview_data["Passes"]
+        if passes_df is not None:
+            show_possessions(passes_df)
+        else:
+            st.info("No passes data available for selected games")
+    elif subview == "Player Stats":
+        df_1 = subview_data["Passes"]
+        df_2 = subview_data["Player Stats"]
+        df_3 = subview_data["Defensive Blocks"]
+        show_player_stats(df_1, df_2, df_3)
 
     show_data = st.checkbox('View All Data', value=False)
     if show_data:
         st.dataframe(df)
-    else:
-         st.info("Select at least one game to view data")
