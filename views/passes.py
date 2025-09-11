@@ -33,23 +33,6 @@ def show_all_passes(df):
 
     with col_chart:
         fig = draw_field()
-
-        # TODO
-        # Player specific stats
-        # Goals, A1, A2, Blocks
-        # Touches, turnovers, thrower errors, receiver errors
-        # Thrower completion percentage, Receiver completion percentage
-        # Average throwing distance / yardage, average receiving distance / yardage
-        # Breakdown of throws by type (short, medium, long)
-        # Completion rates by type (short, medium, long)
-
-        # Additional game filtersI
-        # O points vs D points
-        # Clean scores, dirty scores, broken points
-        # Turnovers - distance compared to average completed throw. Rate of EZ attempts to average completed throw. # of hucks vs short throws.
-    
-       
-
         # Prepare color palette for possessions
         unique_possessions = df['possession_ID'].unique()
         num_possessions = len(unique_possessions)

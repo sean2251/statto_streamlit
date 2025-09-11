@@ -76,10 +76,9 @@ elif data_type == 'Tournaments':
         else:
             st.info("No passes data available for selected games")
     elif subview == "Player Stats":
-        df_1 = subview_data["Passes"]
-        df_2 = subview_data["Player Stats"]
-        df_3 = subview_data["Defensive Blocks"]
-        show_player_stats(df_1, df_2, df_3)
+        pass_df = subview_data["Passes"]
+        df = subview_data["Player Stats"]
+        show_player_stats(pass_df, df)
 
     show_data = st.checkbox('View All Data', value=False)
     if show_data:
