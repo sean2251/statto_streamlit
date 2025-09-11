@@ -237,21 +237,20 @@ def show_receiving_stats(psdf, passes_df):
     df['Player'] = psdf['Player'].unique()
 
     stats = []
-    st.dataframe(passes_df, width="content", hide_index=True)
 
     for player in df['Player']:
         player_catch_attempts = passes_df[passes_df['Receiver'] == player]
         num_catch_attempts = len(player_catch_attempts)
         num_catches = player_catch_attempts[player_catch_attempts['Turnover?'] == 0].shape[0]
         num_drops = player_catch_attempts[(player_catch_attempts['Turnover?'] == 1) & (player_catch_attempts['Receiver error?'] == 1)].shape[0]
-        all_catch_pct = round((num_catches / num_catch_attempts) * 100, 2) if num_catch_attempts > 0 else 0.0
-        catch_pct = round((num_catches / (num_catches + num_drops)) * 100, 2) if num_catch_attempts > 0 else 0.0
+        all_catch_pct = round((num_catches / num_catch_attempts) * 100, 2) if num_catch_attempts else 0.0
+        catch_pct = round((num_catches / (num_catches + num_drops)) * 100, 2) if num_catch_attempts else 0.0
         goals = psdf[psdf['Player'] == player]['Goals'].values[0]
-        goals_per_catch_attempt = round((goals / num_catch_attempts), 2) if num_catch_attempts > 0 else 0.0
+        goals_per_catch_attempt = round((goals / num_catch_attempts), 2) if num_catch_attempts else 0.0
         total_caught_pass_distance = round(psdf[psdf['Player'] == player]['Total caught pass distance (m)'].values[0] * 1.09361, 2)
         total_caught_pass_gain = round(psdf[psdf['Player'] == player]['Total caught pass gain (m)'].values[0] * 1.09361, 2)
-        avg_caught_pass_distance = round(total_caught_pass_distance / num_catches, 2) if num_catches > 0 else 0.0
-        avg_caught_pass_gain = round(total_caught_pass_gain / num_catches, 2) if num_catches > 0 else 0.0
+        avg_caught_pass_distance = round(total_caught_pass_distance / num_catches, 2) if num_catches else 0.0
+        avg_caught_pass_gain = round(total_caught_pass_gain / num_catches, 2) if num_catches else 0.0
 
         stats.append({
             'Player': player,
