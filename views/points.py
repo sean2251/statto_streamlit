@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def show_points(df):
     o_points = df[df['Started on offense?'] == 1]
     total_o_points = len(o_points)

@@ -4,9 +4,6 @@ from collections import defaultdict
 import streamlit as st
 
 
-DATA_DIR = 'data'
-SUBVIEWS = ["Passes", "Points", "Defensive Blocks", "Stall Outs Against", "Player Stats", "Possessions"]
-
 # Utility to load top-level CSVs
 def load_team_csvs(data_dir):
     team_data = {}
