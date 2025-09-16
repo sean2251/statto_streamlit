@@ -1,0 +1,5 @@
+Created,Point,Player,In own endzone?,In opponent's endzone?,Stall out?,Callahan?,Location X (0 -> 1 = left sideline -> right sideline),Location Y (0 -> 1 = back of opponent endzone -> back of own endzone)
+2025-09-15 09:30:41,2,47 Penny Wu,1,0,0,0,0.3091398,0.82107353
+2025-09-15 09:47:41,4,30 Caleb Moran,0,0,0,0,0.6075269,0.5357853
+2025-09-15 09:50:09,4,71 Guber,0,0,0,0,0.4139785,0.18986084
+2025-09-15 10:25:09,15,11 Eric Wong,0,0,0,0,0.77150536,0.26540756
